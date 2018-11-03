@@ -87,13 +87,17 @@ class glazebudget:
         prev_round = history.round(t-1)
         (slot, min_bid, max_bid) = self.target_slot(t, history, reserve)
 
-        bid = self.value
-        epsilon = 0.000001
+        epsilon = 0.000001 # to prevent division by 0
         bfb = (self.value - min_bid) / (min_bid + epsilon)
 
-        if min_bid <= self.value and slot >= 1 and bfb > 1:
-            pos, pos_below = float(prev_round.clicks[slot]), float(prev_round.clicks[slot-1])
-            bid = self.value - (self.value - min_bid) * (pos / pos_below)
+        if min_bid <= self.value and slot >= 1:
+            if bfb > 1:
+                pos, pos_below = float(prev_round.clicks[slot]), float(prev_round.clicks[slot-1])
+                bid = self.value - (self.value - min_bid) * (pos / pos_below)
+            else:
+                bid = min_bid
+        else:
+            bid = self.value
 
         return bid
 
