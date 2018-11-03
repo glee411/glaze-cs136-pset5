@@ -87,6 +87,11 @@ class glazebudget:
         prev_round = history.round(t-1)
         (slot, min_bid, max_bid) = self.target_slot(t, history, reserve)
 
+        # if remaining budget after this round not enough to win last slot in future, use it all now
+        if len(prev_round.slot_payments)-1 >= 0 and history.agents_spent[self.id] < 2 * prev_round.slot_payments[len(prev_round.slot_payments)-1]:
+            bid = self.budget - history.agents_spent[self.id]
+            return bid
+
         epsilon = 0.000001 # to prevent division by 0
         bfb = (self.value - min_bid) / (min_bid + epsilon)
 
