@@ -5,7 +5,7 @@ import sys
 from gsp import GSP
 from util import argmax_index
 
-class BBAgent:
+class glazebudget:
     """Balanced bidding agent"""
     def __init__(self, id, value, budget):
         self.id = id
@@ -35,7 +35,7 @@ class BBAgent:
             if max == None:
                 max = 2 * min
             return (s, min, max)
-            
+
         info = map(compute, range(len(clicks)))
 #        sys.stdout.write("slot info: %s\n" % info)
         return info
@@ -49,10 +49,16 @@ class BBAgent:
 
         returns a list of utilities per slot.
         """
-        # TODO: Fill this in
-        utilities = []   # Change this
 
-        
+        utilities = []
+
+        prev_round = history.round(t-1)
+        slots_info = self.slot_info(t, history, reserve)
+
+        for slot in slots_info:
+            util = (self.value - slot[1]) * prev_round.clicks[slot[0]]
+            utilities.append(util)
+
         return utilities
 
     def target_slot(self, t, history, reserve):
@@ -81,13 +87,16 @@ class BBAgent:
         prev_round = history.round(t-1)
         (slot, min_bid, max_bid) = self.target_slot(t, history, reserve)
 
-        # TODO: Fill this in.
-        bid = 0  # change this
-        
+        bid = self.value
+        epsilon = 0.000001
+        bfb = (self.value - min_bid) / (min_bid + epsilon)
+
+        if min_bid <= self.value and slot >= 1 and bfb > 1:
+            pos, pos_below = float(prev_round.clicks[slot]), float(prev_round.clicks[slot-1])
+            bid = self.value - (self.value - min_bid) * (pos / pos_below)
+
         return bid
 
     def __repr__(self):
         return "%s(id=%d, value=%d)" % (
             self.__class__.__name__, self.id, self.value)
-
-
